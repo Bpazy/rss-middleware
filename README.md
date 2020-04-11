@@ -2,6 +2,7 @@
 rss-middleware 的目的是提取 RSS 订阅中的磁力，并将磁力推送到 qBittorrent 中。
 
 ## 使用手册
+### 直接使用
 ```
 Usage of rss-torrent.exe:
   -cron string
@@ -15,3 +16,4 @@ Usage of rss-torrent.exe:
   -rss string
         RSS 链接地址
 ```
+### Docker
