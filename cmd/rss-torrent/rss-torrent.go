@@ -5,9 +5,10 @@ import (
 	"flag"
 	"github.com/go-resty/resty/v2"
 	"github.com/mmcdole/gofeed"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http/cookiejar"
+	"os"
 	"strings"
 )
 
@@ -21,6 +22,11 @@ type RssMagnet struct {
 	GUID   string // 磁力唯一ID
 	Magnet string // 磁力链接
 	Read   bool   // 是否已读
+}
+
+func init() {
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.DebugLevel)
 }
 
 func main() {
@@ -53,7 +59,7 @@ func main() {
 	for _, rssMagnet := range rssMagnets {
 		magnets = append(magnets, rssMagnet.Magnet)
 	}
-	log.Printf("获取到磁力链接：%s", magnets)
+	log.Debugf("获取到磁力链接：%s", magnets)
 
 	client := resty.New()
 	client.SetHostURL(*qBittorrentApiUrl + "/api/v2")
@@ -73,7 +79,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("%+v\n", err)
 	}
-	log.Printf("登录状态：%s\n", string(loginResp.Body()))
+	log.Debugf("登录状态：%s\n", string(loginResp.Body()))
 
 	// 查询所有已存储的 RSS 数据
 	savedRssMagnet := queryAllRssMagnet()
@@ -81,9 +87,6 @@ func main() {
 	for _, rssMagnet := range savedRssMagnet {
 		GUID2RssMagnet[rssMagnet.GUID] = rssMagnet
 	}
-
-	// 待存储的 RSS 数据
-	var needSaveRssMagnet []RssMagnet
 
 	// 新建任务
 	for _, magnet := range rssMagnets {
@@ -99,34 +102,34 @@ func main() {
 			log.Fatalf("%+v\n", err)
 		}
 		if strings.Contains(string(addTorrentResp.Body()), "Ok") {
-			log.Printf("添加磁力成功：%s\n", magnet.Magnet)
+			log.Infof("添加磁力成功：%s\n", magnet.Magnet)
 			magnet.Read = true
 		} else {
-			log.Printf("添加磁力失败：%s\n", magnet.Magnet)
+			log.Infof("添加磁力失败：%s\n", magnet.Magnet)
 		}
-		needSaveRssMagnet = append(needSaveRssMagnet, magnet)
+		savedRssMagnet = append(savedRssMagnet, magnet)
 	}
 
-	needSaveRssMagnetBytes, err := json.Marshal(needSaveRssMagnet)
+	needSaveRssMagnetBytes, err := json.Marshal(savedRssMagnet)
 	if err != nil {
 		log.Fatalf("序列化 RSS 数据失败: %+v\n", err)
 	}
 	err = ioutil.WriteFile(DatabaseFileName, needSaveRssMagnetBytes, 0777)
 	if err != nil {
-		log.Printf("保存 RSS 数据失败: %+v\n", err)
+		log.Warnf("保存 RSS 数据失败: %+v\n", err)
 	}
 }
 
 func queryAllRssMagnet() []RssMagnet {
 	dataBytes, err := ioutil.ReadFile(DatabaseFileName)
 	if err != nil {
-		log.Printf("查询既存数据失败：%+v", err)
+		log.Warnf("查询既存数据失败：%+v", err)
 		return nil
 	}
 	var result []RssMagnet
 	err = json.Unmarshal(dataBytes, &result)
 	if err != nil {
-		log.Printf("序列化失败：%+v", err)
+		log.Warnf("序列化失败：%+v", err)
 		return nil
 	}
 	return result
