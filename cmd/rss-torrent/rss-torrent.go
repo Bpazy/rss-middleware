@@ -42,7 +42,7 @@ func main() {
 	flag.StringVar(&qBittorrentApiUrl, "qbittorrent", "", "qBittorrent API 链接地址")
 	flag.StringVar(&qBittorrentUsername, "qbittorrent-username", "", "qBittorrent 用户名")
 	flag.StringVar(&qBittorrentPassword, "qbittorrent-password", "", "qBittorrent 密码")
-	flag.StringVar(&daemonCron, "cron", "", "cron")
+	flag.StringVar(&daemonCron, "cron", "", "守护模式")
 	flag.Parse()
 
 	if daemonCron == "" {
