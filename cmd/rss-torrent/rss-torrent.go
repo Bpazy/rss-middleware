@@ -38,10 +38,10 @@ var (
 )
 
 func main() {
-	rssUrl := flag.String("rss", "", "rss url")
-	flag.StringVar(&qBittorrentApiUrl, "qbittorrent", "", "qbittorrent api url")
-	flag.StringVar(&qBittorrentUsername, "qbittorrent-username", "", "qbittorrent username")
-	flag.StringVar(&qBittorrentPassword, "qbittorrent-password", "", "qbittorrent password")
+	rssUrl := flag.String("rss", "", "RSS 链接地址")
+	flag.StringVar(&qBittorrentApiUrl, "qbittorrent", "", "qBittorrent API 链接地址")
+	flag.StringVar(&qBittorrentUsername, "qbittorrent-username", "", "qBittorrent 用户名")
+	flag.StringVar(&qBittorrentPassword, "qbittorrent-password", "", "qBittorrent 密码")
 	flag.StringVar(&daemonCron, "cron", "", "cron")
 	flag.Parse()
 
