@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/go-resty/resty/v2"
 	"github.com/mmcdole/gofeed"
+	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http/cookiejar"
@@ -29,17 +30,44 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
+var (
+	qBittorrentApiUrl   string
+	qBittorrentUsername string
+	qBittorrentPassword string
+	daemonCron          string
+)
+
 func main() {
 	rssUrl := flag.String("rss", "", "rss url")
-	qBittorrentApiUrl := flag.String("qbittorrent", "", "qbittorrent api url")
-	qBittorrentUsername := flag.String("qbittorrent-username", "", "qbittorrent username")
-	qBittorrentPassword := flag.String("qbittorrent-password", "", "qbittorrent password")
+	flag.StringVar(&qBittorrentApiUrl, "qbittorrent", "", "qbittorrent api url")
+	flag.StringVar(&qBittorrentUsername, "qbittorrent-username", "", "qbittorrent username")
+	flag.StringVar(&qBittorrentPassword, "qbittorrent-password", "", "qbittorrent password")
+	flag.StringVar(&daemonCron, "cron", "", "cron")
 	flag.Parse()
 
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(*rssUrl)
+	if daemonCron == "" {
+		downloadRSSOnce(*rssUrl)
+		return
+	}
+
+	c := cron.New()
+	_, err := c.AddFunc(daemonCron, func() {
+		downloadRSSOnce(*rssUrl)
+	})
 	if err != nil {
-		log.Fatalf("%+v\n", err)
+		log.Fatalf("cron error: %+v", err)
+	}
+	c.Run()
+}
+
+func downloadRSSOnce(rssUrl string) {
+	log.Debugf("开始加载 RSS 链接: %s", rssUrl)
+
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(rssUrl)
+	if err != nil {
+		log.Warnf("加载 RSS 链接失败: %+v", err)
+		return
 	}
 
 	// 提取所有磁力
@@ -62,24 +90,24 @@ func main() {
 	log.Debugf("获取到磁力链接：%s", magnets)
 
 	client := resty.New()
-	client.SetHostURL(*qBittorrentApiUrl + "/api/v2")
+	client.SetHostURL(qBittorrentApiUrl + "/api/v2")
 
 	// 设置 cookie jar
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		log.Fatalf("%+v\n", err)
+		log.Fatalf("%+v", err)
 	}
 	client.SetCookieJar(jar)
 
 	// 登录
 	loginResp, err := client.R().SetQueryParams(map[string]string{
-		"username": *qBittorrentUsername,
-		"password": *qBittorrentPassword,
+		"username": qBittorrentUsername,
+		"password": qBittorrentPassword,
 	}).Get("/auth/login")
 	if err != nil {
-		log.Fatalf("%+v\n", err)
+		log.Fatalf("%+v", err)
 	}
-	log.Debugf("登录状态：%s\n", string(loginResp.Body()))
+	log.Debugf("登录状态：%s", string(loginResp.Body()))
 
 	// 查询所有已存储的 RSS 数据
 	savedRssMagnet := queryAllRssMagnet()
@@ -88,6 +116,8 @@ func main() {
 		GUID2RssMagnet[rssMagnet.GUID] = rssMagnet
 	}
 
+	// 是否有新增 RSS
+	noneNewRss := true
 	// 新建任务
 	for _, magnet := range rssMagnets {
 		// 判断该 RSS 是否已读
@@ -95,28 +125,32 @@ func main() {
 			continue
 		}
 
+		noneNewRss = false
 		addTorrentResp, err := client.R().SetQueryParams(map[string]string{
 			"urls": magnet.Magnet,
 		}).Get("/torrents/add")
 		if err != nil {
-			log.Fatalf("%+v\n", err)
+			log.Fatalf("%+v", err)
 		}
 		if strings.Contains(string(addTorrentResp.Body()), "Ok") {
-			log.Infof("添加磁力成功：%s\n", magnet.Magnet)
+			log.Infof("添加磁力成功：%s", magnet.Magnet)
 			magnet.Read = true
 		} else {
-			log.Infof("添加磁力失败：%s\n", magnet.Magnet)
+			log.Infof("添加磁力失败：%s", magnet.Magnet)
 		}
 		savedRssMagnet = append(savedRssMagnet, magnet)
+	}
+	if noneNewRss {
+		log.Debugf("无新增 RSS")
 	}
 
 	needSaveRssMagnetBytes, err := json.Marshal(savedRssMagnet)
 	if err != nil {
-		log.Fatalf("序列化 RSS 数据失败: %+v\n", err)
+		log.Fatalf("序列化 RSS 数据失败: %+v", err)
 	}
 	err = ioutil.WriteFile(DatabaseFileName, needSaveRssMagnetBytes, 0777)
 	if err != nil {
-		log.Warnf("保存 RSS 数据失败: %+v\n", err)
+		log.Warnf("保存 RSS 数据失败: %+v", err)
 	}
 }
 
