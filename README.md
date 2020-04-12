@@ -26,7 +26,7 @@ Usage of rss-middleware.exe:
 docker run --name rss-middleware -e RSS=https://rsshub.app/dytt -e QBITTORRENT=http://192.168.194.20:8080 -e QBITTORRENT_USERNAME=admin -e QBITTORRENT_PASSWORD=admin -e CRON="*/1 * * * *" bpazy/rss-middleware
 ```
 
-### Docker Compose
+### Docker Compose (推荐)
 1. 下载 [docker-compose.yml](./docker-compose.yml) 到任意位置;
 2. 编辑 docker-compose.yml 文件;
 3. 启动: `docker-compose up -d`

@@ -3,9 +3,9 @@ services:
   rss-middleware:
     image: bpazy/rss-middleware
     volumes:
-      - /rss-middleware-data:/data # 数据存储位置
+      - ./rss-middleware-data:/data # 数据存储位置
     environment:
-      - CRON=* */10 * * * # 运行频率，当前为每 10 分钟运行一次
+      - CRON=*/10 * * * * # 运行频率，当前为每 10 分钟运行一次
       - QBITTORRENT=http://192.168.194.20:8080 # qBittorrent 地址
       - QBITTORRENT_USERNAME=admin # qBittorrent 用户名
       - QBITTORRENT_PASSWORD=admin # qBittorrent 密码
