@@ -1,6 +1,6 @@
 # rss-middleware 
-![Build](https://github.com/Bpazy/rss-middleware/workflows/Build/badge.svg)
-![Docker Pulls](https://img.shields.io/docker/pulls/bpazy/rss-middleware)
+[![Build](https://github.com/Bpazy/rss-middleware/workflows/Build/badge.svg)](https://github.com/Bpazy/rss-middleware/actions?query=workflow%3ABuild)
+[![Docker Pulls](https://img.shields.io/docker/pulls/bpazy/rss-middleware)](https://hub.docker.com/r/bpazy/rss-middleware)
   
 rss-middleware 的目的是提取 RSS 订阅中的磁力，并将磁力推送到 qBittorrent 中。
 
