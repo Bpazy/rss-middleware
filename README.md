@@ -20,8 +20,11 @@ Usage of rss-torrent.exe:
         RSS 链接地址
 ```
 ### Docker 示例
-```
-docker run --name rss-torrent bpazy/rss-middleware -rss https://rsshub.app/dytt -qbittorrent http://192.168.194.20:8080 -qbittorrent-username admin -qbittorrent-password admin -cron="*/1 * * * *"
+```shell
+docker run --name rss-torrent -e RSS=https://rsshub.app/dytt -e QBITTORRENT=http://192.168.194.20:8080 -e QBITTORRENT_USERNAME=admin -e QBITTORRENT_PASSWORD=admin -e CRON="*/1 * * * *" bpazy/rss-middleware
 ```
 
 ### Docker Compose
+1. 下载 [docker-compose.yml](./docker-compose.yml) 到任意位置;
+2. 编辑 docker-compose.yml 文件;
+3. 启动: `docker-compose up -d`

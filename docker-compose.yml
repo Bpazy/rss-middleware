@@ -1,0 +1,11 @@
+version: '3'
+services:
+  ziyuan:
+    image: test
+    environment:
+      - CRON=*/1 * * * * # 运行频率，当前为每分钟运行一次
+      - QBITTORRENT=http://192.168.194.20:8080 # qBittorrent 地址
+      - QBITTORRENT_USERNAME=admin # qBittorrent 用户名
+      - QBITTORRENT_PASSWORD=admin # qBittorrent 密码
+      - RSS=https://rsshub.app/dytt # RSS 地址
+    restart: always
