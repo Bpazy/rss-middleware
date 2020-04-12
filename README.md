@@ -1,4 +1,7 @@
-# rss-middleware ![Build](https://github.com/Bpazy/rss-middleware/workflows/Build/badge.svg)  
+# rss-middleware 
+![Build](https://github.com/Bpazy/rss-middleware/workflows/Build/badge.svg)
+![Docker Pulls](https://img.shields.io/docker/pulls/bpazy/rss-middleware)
+  
 rss-middleware 的目的是提取 RSS 订阅中的磁力，并将磁力推送到 qBittorrent 中。
 
 ## 使用手册
@@ -16,4 +19,9 @@ Usage of rss-torrent.exe:
   -rss string
         RSS 链接地址
 ```
-### Docker
+### Docker 示例
+```
+docker run --name rss-torrent bpazy/rss-middleware -rss https://rsshub.app/dytt -qbittorrent http://192.168.194.20:8080 -qbittorrent-username admin -qbittorrent-password admin -cron="*/1 * * * *"
+```
+
+### Docker Compose
