@@ -9,6 +9,7 @@ ENV QBITTORRENT ""
 ENV QBITTORRENT_PASSWORD ""
 ENV QBITTORRENT_USERNAME ""
 ENV RSS ""
+VOLUME /data
 COPY --from=development /rss-middleware/rss-middleware /rss-middleware/rss-middleware
 WORKDIR /rss-middleware
 ENTRYPOINT ./rss-middleware \
@@ -16,4 +17,5 @@ ENTRYPOINT ./rss-middleware \
                 -qbittorrent $QBITTORRENT \
                 -qbittorrent-username $QBITTORRENT_USERNAME \
                 -qbittorrent-password $QBITTORRENT_PASSWORD \
+                -config-path /data \
                 -cron="$CRON"
