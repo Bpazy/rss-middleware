@@ -57,7 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cron error: %+v", err)
 	}
-	log.Info("rss-torrent 守护模式启动成功")
+	log.Info("rss-middleware 守护模式启动成功")
 	c.Run()
 }
 

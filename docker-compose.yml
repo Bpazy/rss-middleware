@@ -1,7 +1,7 @@
 version: '3'
 services:
-  ziyuan:
-    image: test
+  rss-middleware:
+    image: bpazy/rss-middleware
     environment:
       - CRON=*/1 * * * * # 运行频率，当前为每分钟运行一次
       - QBITTORRENT=http://192.168.194.20:8080 # qBittorrent 地址

@@ -7,7 +7,7 @@ rss-middleware 的目的是提取 RSS 订阅中的磁力，并将磁力推送到
 ## 使用手册
 ### 直接使用
 ```
-Usage of rss-torrent.exe:
+Usage of rss-middleware.exe:
   -cron string
         守护模式
   -qbittorrent string
@@ -21,7 +21,7 @@ Usage of rss-torrent.exe:
 ```
 ### Docker 示例
 ```shell
-docker run --name rss-torrent -e RSS=https://rsshub.app/dytt -e QBITTORRENT=http://192.168.194.20:8080 -e QBITTORRENT_USERNAME=admin -e QBITTORRENT_PASSWORD=admin -e CRON="*/1 * * * *" bpazy/rss-middleware
+docker run --name rss-middleware -e RSS=https://rsshub.app/dytt -e QBITTORRENT=http://192.168.194.20:8080 -e QBITTORRENT_USERNAME=admin -e QBITTORRENT_PASSWORD=admin -e CRON="*/1 * * * *" bpazy/rss-middleware
 ```
 
 ### Docker Compose
