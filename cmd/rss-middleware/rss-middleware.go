@@ -15,6 +15,7 @@ import (
 
 const (
 	DatabaseFileName = "rss-middleware-database.json"
+	Ok               = "Ok"
 )
 
 // RSS 中的磁力相关信息
@@ -25,34 +26,44 @@ type RssMagnet struct {
 	Read   bool   // 是否已读
 }
 
-func init() {
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
-}
-
 var (
 	qBittorrentApiUrl   string
 	qBittorrentUsername string
 	qBittorrentPassword string
 	daemonCron          string
+	configPath          string
+	rssUrl              string
 )
 
-func main() {
-	rssUrl := flag.String("rss", "", "RSS 链接地址")
+func init() {
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.DebugLevel)
+
+	flag.StringVar(&rssUrl, "rss", "", "RSS 链接地址")
 	flag.StringVar(&qBittorrentApiUrl, "qbittorrent", "", "qBittorrent API 链接地址")
 	flag.StringVar(&qBittorrentUsername, "qbittorrent-username", "", "qBittorrent 用户名")
 	flag.StringVar(&qBittorrentPassword, "qbittorrent-password", "", "qBittorrent 密码")
 	flag.StringVar(&daemonCron, "cron", "", "守护模式")
+	flag.StringVar(&configPath, "config-path", ".", "配置文件、数据文件存储目录")
 	flag.Parse()
 
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		err := os.MkdirAll(configPath, 0777)
+		if err != nil {
+			log.Fatalf("创建配置文件目录失败: %+v", err)
+		}
+	}
+}
+
+func main() {
 	if daemonCron == "" {
-		downloadRSSOnce(*rssUrl)
+		downloadRSSOnce(rssUrl)
 		return
 	}
 
 	c := cron.New()
 	_, err := c.AddFunc(daemonCron, func() {
-		downloadRSSOnce(*rssUrl)
+		downloadRSSOnce(rssUrl)
 	})
 	if err != nil {
 		log.Fatalf("cron error: %+v", err)
@@ -108,7 +119,11 @@ func downloadRSSOnce(rssUrl string) {
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	log.Debugf("登录状态：%s", string(loginResp.Body()))
+	loginStatus := string(loginResp.Body())
+	if !strings.Contains(loginStatus, Ok) {
+		log.Warnf("登录失败：%s", loginStatus)
+		return
+	}
 
 	// 查询所有已存储的 RSS 数据
 	savedRssMagnet := queryAllRssMagnet()
@@ -133,7 +148,7 @@ func downloadRSSOnce(rssUrl string) {
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		if strings.Contains(string(addTorrentResp.Body()), "Ok") {
+		if strings.Contains(string(addTorrentResp.Body()), Ok) {
 			log.Infof("添加磁力成功：%s", magnet.Magnet)
 			magnet.Read = true
 		} else {
@@ -149,14 +164,14 @@ func downloadRSSOnce(rssUrl string) {
 	if err != nil {
 		log.Fatalf("序列化 RSS 数据失败: %+v", err)
 	}
-	err = ioutil.WriteFile(DatabaseFileName, needSaveRssMagnetBytes, 0777)
+	err = ioutil.WriteFile(getDatabaseFilePath(), needSaveRssMagnetBytes, 0777)
 	if err != nil {
 		log.Warnf("保存 RSS 数据失败: %+v", err)
 	}
 }
 
 func queryAllRssMagnet() []RssMagnet {
-	dataBytes, err := ioutil.ReadFile(DatabaseFileName)
+	dataBytes, err := ioutil.ReadFile(getDatabaseFilePath())
 	if err != nil {
 		log.Warnf("查询既存数据失败：%+v", err)
 		return nil
@@ -168,4 +183,8 @@ func queryAllRssMagnet() []RssMagnet {
 		return nil
 	}
 	return result
+}
+
+func getDatabaseFilePath() string {
+	return configPath + "/" + DatabaseFileName
 }

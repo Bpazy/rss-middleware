@@ -18,6 +18,8 @@ Usage of rss-middleware.exe:
         qBittorrent 用户名
   -rss string
         RSS 链接地址
+  -config-path string
+        配置文件、数据文件存储目录
 ```
 ### Docker 示例
 ```shell
