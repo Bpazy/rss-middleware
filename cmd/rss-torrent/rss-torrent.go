@@ -50,7 +50,6 @@ func main() {
 		return
 	}
 
-	log.Info("rss-torrent 守护模式启动成功")
 	c := cron.New()
 	_, err := c.AddFunc(daemonCron, func() {
 		downloadRSSOnce(*rssUrl)
@@ -58,6 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cron error: %+v", err)
 	}
+	log.Info("rss-torrent 守护模式启动成功")
 	c.Run()
 }
 
