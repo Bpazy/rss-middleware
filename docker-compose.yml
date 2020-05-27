@@ -1,7 +1,7 @@
 version: '3'
 services:
   rss-middleware:
-    image: bpazy/rss-middleware
+    image: bpazy/rss-middleware:latest
     volumes:
       - ./rss-middleware-data:/data # 数据存储位置
     environment:
